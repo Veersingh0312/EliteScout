@@ -1,0 +1,43 @@
+stages:
+  prepare:
+    cmd: python backend/app/ml/feature_engineering.py
+    deps:
+      - backend/app/ml/feature_engineering.py
+      - data/transfermarkt_player_values.csv
+      - data/transfermarkt_value_history.csv
+    outs:
+      - data/processed/encoders.json
+  
+  train_regression:
+    cmd: python backend/app/ml/train_regression.py
+    deps:
+      - backend/app/ml/train_regression.py
+      - data/transfermarkt_player_values.csv
+    outs:
+      - models/regression/best_model.joblib
+    metrics:
+      - metrics/regression.json:
+          cache: false
+
+  train_classifier:
+    cmd: python backend/app/ml/train_classifier.py
+    deps:
+      - backend/app/ml/train_classifier.py
+      - data/transfermarkt_player_values.csv
+    outs:
+      - models/classifier/best_model.joblib
+      - models/classifier/label_encoder.joblib
+    metrics:
+      - metrics/classifier.json:
+          cache: false
+
+  train_timeseries:
+    cmd: python backend/app/ml/train_timeseries.py
+    deps:
+      - backend/app/ml/train_timeseries.py
+      - data/transfermarkt_value_history.csv
+    outs:
+      - models/timeseries/best_model.joblib
+    metrics:
+      - metrics/timeseries.json:
+          cache: false

@@ -1,0 +1,74 @@
+{
+  "best_model": "XGBoost",
+  "models": {
+    "LightGBM": {
+      "model_name": "LightGBM",
+      "model_type": "regression",
+      "mae": 7133903.34,
+      "rmse": 15259276.46,
+      "r2": 0.7877,
+      "cv_r2_mean": 0.6365,
+      "feature_importances": {
+        "age": 170,
+        "career_span_years": 293,
+        "value_cagr": 432,
+        "value_multiplier_x": 357,
+        "value_volatility": 253,
+        "age_at_peak": 81,
+        "peak_value_eur": 593,
+        "years_to_peak": 300,
+        "num_clubs_career": 49,
+        "mean_yoy_growth_rate": 244,
+        "num_valuation_points": 173,
+        "position_group_encoded": 0,
+        "league_name_encoded": 111
+      }
+    },
+    "XGBoost": {
+      "model_name": "XGBoost",
+      "model_type": "regression",
+      "mae": 6396547.01,
+      "rmse": 12356457.62,
+      "r2": 0.8608,
+      "cv_r2_mean": 0.3985,
+      "feature_importances": {
+        "age": 0.0229,
+        "career_span_years": 0.0283,
+        "value_cagr": 0.0386,
+        "value_multiplier_x": 0.0332,
+        "value_volatility": 0.0263,
+        "age_at_peak": 0.0178,
+        "peak_value_eur": 0.6182,
+        "years_to_peak": 0.0173,
+        "num_clubs_career": 0.0206,
+        "mean_yoy_growth_rate": 0.0199,
+        "num_valuation_points": 0.0464,
+        "position_group_encoded": 0.0,
+        "league_name_encoded": 0.1105
+      }
+    },
+    "RandomForest": {
+      "model_name": "RandomForest",
+      "model_type": "regression",
+      "mae": 6570083.51,
+      "rmse": 12447035.37,
+      "r2": 0.8587,
+      "cv_r2_mean": 0.6226,
+      "feature_importances": {
+        "age": 0.019,
+        "career_span_years": 0.0221,
+        "value_cagr": 0.047,
+        "value_multiplier_x": 0.0071,
+        "value_volatility": 0.0089,
+        "age_at_peak": 0.0032,
+        "peak_value_eur": 0.8538,
+        "years_to_peak": 0.0061,
+        "num_clubs_career": 0.0041,
+        "mean_yoy_growth_rate": 0.0077,
+        "num_valuation_points": 0.0152,
+        "position_group_encoded": 0.0,
+        "league_name_encoded": 0.006
+      }
+    }
+  }
+}

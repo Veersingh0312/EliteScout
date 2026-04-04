@@ -1,0 +1,80 @@
+{
+  "best_model": "LightGBM",
+  "models": {
+    "LightGBM": {
+      "model_name": "LightGBM",
+      "model_type": "classification",
+      "accuracy": 1.0,
+      "f1_score": 1.0,
+      "cv_f1_mean": 0.9963,
+      "feature_importances": {
+        "age": 629,
+        "career_span_years": 792,
+        "value_cagr": 187,
+        "value_multiplier_x": 142,
+        "value_volatility": 12,
+        "age_at_peak": 4,
+        "peak_value_eur": 71,
+        "years_to_peak": 4,
+        "num_clubs_career": 1,
+        "mean_yoy_growth_rate": 38,
+        "num_valuation_points": 278,
+        "position_group_encoded": 0,
+        "league_name_encoded": 2,
+        "post_peak_decline_pct": 2493,
+        "is_at_peak": 658,
+        "value_to_peak_cagr": 66
+      }
+    },
+    "XGBoost": {
+      "model_name": "XGBoost",
+      "model_type": "classification",
+      "accuracy": 1.0,
+      "f1_score": 1.0,
+      "cv_f1_mean": 0.998,
+      "feature_importances": {
+        "age": 0.0,
+        "career_span_years": 0.0007,
+        "value_cagr": 0.0015,
+        "value_multiplier_x": 0.0,
+        "value_volatility": 0.0003,
+        "age_at_peak": 0.0,
+        "peak_value_eur": 0.0003,
+        "years_to_peak": 0.0001,
+        "num_clubs_career": 0.0,
+        "mean_yoy_growth_rate": 0.0003,
+        "num_valuation_points": 0.0005,
+        "position_group_encoded": 0.0,
+        "league_name_encoded": 0.0,
+        "post_peak_decline_pct": 0.3062,
+        "is_at_peak": 0.6898,
+        "value_to_peak_cagr": 0.0003
+      }
+    },
+    "RandomForest": {
+      "model_name": "RandomForest",
+      "model_type": "classification",
+      "accuracy": 0.9706,
+      "f1_score": 0.9688,
+      "cv_f1_mean": 0.9728,
+      "feature_importances": {
+        "age": 0.0161,
+        "career_span_years": 0.0449,
+        "value_cagr": 0.0595,
+        "value_multiplier_x": 0.0214,
+        "value_volatility": 0.0234,
+        "age_at_peak": 0.009,
+        "peak_value_eur": 0.0208,
+        "years_to_peak": 0.0269,
+        "num_clubs_career": 0.0071,
+        "mean_yoy_growth_rate": 0.0337,
+        "num_valuation_points": 0.0302,
+        "position_group_encoded": 0.0,
+        "league_name_encoded": 0.0097,
+        "post_peak_decline_pct": 0.3619,
+        "is_at_peak": 0.3089,
+        "value_to_peak_cagr": 0.0265
+      }
+    }
+  }
+}

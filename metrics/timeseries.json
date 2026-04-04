@@ -1,0 +1,22 @@
+{
+  "best_model": "LightGBM",
+  "models": {
+    "LightGBM": {
+      "model_name": "LightGBM",
+      "model_type": "timeseries",
+      "mae": 363512.99,
+      "rmse": 1121286.07,
+      "r2": 0.998,
+      "feature_importances": {
+        "value_lag_1": 1068,
+        "value_lag_2": 807,
+        "value_lag_3": 338,
+        "value_rolling_avg_3": 1277,
+        "value_rolling_std_3": 1028,
+        "value_pct_change": 1363,
+        "age_at_date": 70,
+        "months_since_first": 219
+      }
+    }
+  }
+}
