@@ -4,7 +4,7 @@ pipeline {
     environment {
         AZ_WEBAPP_NAME = 'football-mlops-app'
         DOCKER_IMAGE = 'veersinghx7/football-mlops'
-        MLFLOW_TRACKING_URI = 'http://localhost:5000'
+        MLFLOW_TRACKING_URI = 'http://localhost:5050'
         PYTHON_PATH = "C:\\Users\\veers\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
     }
 
