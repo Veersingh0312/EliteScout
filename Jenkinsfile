@@ -5,6 +5,7 @@ pipeline {
         AZ_WEBAPP_NAME = 'football-mlops-app'
         DOCKER_IMAGE = 'veersinghx7/football-mlops'
         MLFLOW_TRACKING_URI = 'http://mlflow-server:5000'
+        PYTHON_PATH = "C:\\Users\\veers\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
     }
 
     stages {
@@ -17,11 +18,10 @@ pipeline {
                         sh ". venv/bin/activate && pip install -r backend/requirements.txt"
                         sh ". venv/bin/activate && pip install dvc"
                     } else {
-                        // Attempt to use 'py' launcher if 'python' is not in PATH
-                        bat "py -m venv venv || python -m venv venv"
-                        bat "venv\\Scripts\\activate && pip install --upgrade pip"
-                        bat "venv\\Scripts\\activate && pip install -r backend/requirements.txt"
-                        bat "venv\\Scripts\\activate && pip install dvc"
+                        bat "\"${PYTHON_PATH}\" -m venv venv"
+                        bat "venv\\Scripts\\python.exe -m pip install --upgrade pip"
+                        bat "venv\\Scripts\\pip install -r backend\\requirements.txt"
+                        bat "venv\\Scripts\\pip install dvc"
                     }
                 }
             }
@@ -33,7 +33,7 @@ pipeline {
                     if (isUnix()) {
                         sh ". venv/bin/activate && dvc --version"
                     } else {
-                        bat "venv\\Scripts\\activate && dvc --version"
+                        bat "venv\\Scripts\\dvc --version"
                     }
                     echo "DVC Data parity check initiated..."
                 }
@@ -49,9 +49,9 @@ pipeline {
                         sh ". venv/bin/activate && python3 -m backend.app.ml.train_classifier"
                         sh ". venv/bin/activate && python3 -m backend.app.ml.train_timeseries"
                     } else {
-                        bat "venv\\Scripts\\activate && python -m backend.app.ml.train_regression"
-                        bat "venv\\Scripts\\activate && python -m backend.app.ml.train_classifier"
-                        bat "venv\\Scripts\\activate && python -m backend.app.ml.train_timeseries"
+                        bat "venv\\Scripts\\python -m backend.app.ml.train_regression"
+                        bat "venv\\Scripts\\python -m backend.app.ml.train_classifier"
+                        bat "venv\\Scripts\\python -m backend.app.ml.train_timeseries"
                     }
                     echo "Metrics logged to MLflow via ${MLFLOW_TRACKING_URI}"
                 }
