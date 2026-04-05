@@ -7,3 +7,6 @@ mlflow.db
 dist/
 .env
 .DS_Store
+jenkins_home/
+venv/
+.pytest_cache/
