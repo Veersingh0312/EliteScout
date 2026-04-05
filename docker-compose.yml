@@ -19,7 +19,7 @@ services:
 
   # MLflow Tracking Server & UI
   mlflow-server:
-    image: ghcr.io/mlflow/mlflow:v2.11.3
+    image: python:3.10-slim
     container_name: mlflow-dashboard
     ports:
       - "5050:5000"
@@ -27,4 +27,4 @@ services:
       - ./mlruns:/app/mlruns
       - ./mlflow.db:/app/mlflow.db
     command: >
-      sh -c "mlflow db upgrade sqlite:///app/mlflow.db && mlflow server --backend-store-uri sqlite:///app/mlflow.db --default-artifact-root /app/mlruns/ --host 0.0.0.0"
+      sh -c "pip install mlflow==3.10.1 && mlflow db upgrade sqlite:///app/mlflow.db && mlflow server --backend-store-uri sqlite:///app/mlflow.db --default-artifact-root /app/mlruns/ --host 0.0.0.0"
