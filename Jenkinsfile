@@ -17,7 +17,8 @@ pipeline {
                         sh ". venv/bin/activate && pip install -r backend/requirements.txt"
                         sh ". venv/bin/activate && pip install dvc"
                     } else {
-                        bat "python -m venv venv"
+                        // Attempt to use 'py' launcher if 'python' is not in PATH
+                        bat "py -m venv venv || python -m venv venv"
                         bat "venv\\Scripts\\activate && pip install --upgrade pip"
                         bat "venv\\Scripts\\activate && pip install -r backend/requirements.txt"
                         bat "venv\\Scripts\\activate && pip install dvc"
