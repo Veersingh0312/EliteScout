@@ -1,31 +1,43 @@
 # Football Market Value Intelligence Platform
 
-An end-to-end MLOps platform for analyzing and predicting football player market values using the Transfermarkt dataset.
+An end-to-end MLOps platform for analyzing and predicting football player market values using an embedded, offline Transfermarkt dataset.
 
 ## Features
 
-*   **Market Value Prediction:** Regression models (LightGBM, XGBoost, Random Forest) predict a player's current value based on age, position, career span, and historical trajectory.
-*   **Trajectory Classification:** Classifies a player's career phase (rising star, growing, stable, declining) using feature-engineered historical data.
-*   **Time Series Forecasting:** Predicts future market values based on lagged valuation history using a time series LightGBM model.
-*   **Live Metrics:** Exposes comprehensive model evaluation metrics from MLflow.
-*   **React Dashboard:** Modern glassmorphism UI built with Vite, React, Tailwind CSS, and Recharts.
+*   **Scenario Simulator:** Search any player from our local dataset to auto-populate their actual stats, iteratively overriding individual attributes (such as age or club tenure) to run real-time counterfactual market value predictions.
+*   **Market Value Prediction:** Ensemble regression models (LightGBM, XGBoost, Random Forest) predict a player's absolute value based on age, position, career span, and performance multipliers.
+*   **Trajectory Classification:** Classifies a player's career phase (rising star, growing, stable, declining) using feature-engineered historical data and volatility index.
+*   **Time Series Forecasting:** Autoregressive prediction of future market values based on lagged historical valuation using a dedicated forecasting model.
+*   **Live Metrics Dashboard:** Exposes interactive model evaluation metrics generated directly via MLflow tracking logs.
+*   **React + Tailwind UI:** Modern glassmorphism aesthetics constructed with Vite, React, vanilla Tailwind, and Recharts.
+*   **Docker Ready:** Configured to instantly spin up via `docker-compose`.
 
 ## Architecture
 
 *   **Backend:** FastAPI, Pandas, scikit-learn, XGBoost, LightGBM
-*   **Frontend:** React, Tailwind CSS, ShadCN UI concepts, Recharts
+*   **Frontend:** Vite, React, Tailwind CSS, Recharts, Lucide-React
 *   **MLOps:** MLflow (experiment tracking), DVC (data versioning)
-*   **Deployment:** Docker, GitHub Actions CI/CD
+*   **Deployment:** Docker Compose, Dockerfiles
+*   **Offline Mode:** 100% decoupled from 3rd-party live APIs; relies solely on cached, sanitized local knowledge bases for lightning-fast querying.
 
 ## Running Locally
 
-1. **Install Requirements:**
+### Option 1: Docker (Recommended)
+You can build and run both the FastAPI backend and React frontend concurrently via Docker Compose:
+```bash
+docker-compose up --build
+```
+Open `http://localhost:8000` in your browser.
+
+### Option 2: Manual Installation
+
+1. **Install Python Backend Requirements:**
    ```bash
    pip install -r backend/requirements.txt
    ```
 
-2. **Train Models:**
-   Models are already trained, but you can retrain them:
+2. **Train Models (Optional):**
+   Models are pre-trained inside `/models/`, but you can re-generate them via:
    ```bash
    python -m backend.app.ml.train_regression
    python -m backend.app.ml.train_classifier
@@ -33,14 +45,14 @@ An end-to-end MLOps platform for analyzing and predicting football player market
    ```
 
 3. **Run Backend & Serve Frontend:**
-   First, build the React app:
+   First, compile the frontend assets:
    ```bash
    cd frontend
    npm install
    npm run build
    cd ..
    ```
-   Then run FastAPI:
+   Launch Uvicorn to serve the API + static UI assets:
    ```bash
    python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
    ```
