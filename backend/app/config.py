@@ -20,8 +20,8 @@ REGRESSION_MODEL_DIR = MODELS_DIR / "regression"
 CLASSIFIER_MODEL_DIR = MODELS_DIR / "classifier"
 TIMESERIES_MODEL_DIR = MODELS_DIR / "timeseries"
 
-# MLflow
-MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", f"sqlite:///{PROJECT_ROOT / 'mlflow.db'}")
+# MLflow (Defaults to the local Docker-mapped port 5050)
+MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI", "http://localhost:5050")
 MLFLOW_EXPERIMENT_REGRESSION = "market-value-regression"
 MLFLOW_EXPERIMENT_CLASSIFIER = "trajectory-classification"
 MLFLOW_EXPERIMENT_TIMESERIES = "value-timeseries"
