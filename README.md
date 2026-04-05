@@ -27,7 +27,8 @@ You can build and run both the FastAPI backend and React frontend concurrently v
 ```bash
 docker-compose up --build
 ```
-Open `http://localhost:8000` in your browser.
+- Core App & Dashboard: `http://localhost:8000`
+- MLflow Tracking Server: `http://localhost:5050`
 
 ### Option 2: Manual Installation
 
