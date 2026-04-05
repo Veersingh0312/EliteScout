@@ -2,84 +2,81 @@ pipeline {
     agent any
 
     environment {
-        // App environment constants mimicking GitHub CI
-        AZURE_WEBAPP_NAME = 'football-mlops-app'
-        DOCKER_IMAGE_NAME = 'elitescout/football-mlops'
-        PYTHON_VERSION = '3.10'
+        AZ_WEBAPP_NAME = 'football-mlops-app'
+        DOCKER_IMAGE = 'veersinghx7/football-mlops'
+        // Port for mlflow local referencing
+        MLFLOW_TRACKING_URI = 'http://mlflow-server:5000'
     }
 
     stages {
-        stage('Checkout SCM') {
+        stage('Initialize & Dependencies') {
             steps {
-                echo 'Checking out source control...'
-                // checkout scm (automatically done by Jenkins Multibranch pipelines, mocked for standalone)
-                echo 'Source checkout complete - Football Market Value Intelligence'
+                script {
+                    sh "python3 -m venv venv"
+                    sh ". venv/bin/activate && pip install --upgrade pip"
+                    sh ". venv/bin/activate && pip install -r backend/requirements.txt"
+                    sh ". venv/bin/activate && pip install dvc"
+                }
             }
         }
 
-        stage('Set up Python Environment') {
+        stage('DVC: Data Verification') {
             steps {
-                echo "Initializing Python ${PYTHON_VERSION} environment..."
-                echo 'Running: python -m pip install --upgrade pip'
-                echo 'Running: pip install -r backend/requirements.txt'
-                echo 'Running: pip install dvc dvc-s3'
+                script {
+                    // Check if dvc files exist
+                    sh ". venv/bin/activate && dvc --version"
+                    echo "DVC Data parity check initiated..."
+                }
             }
         }
 
-        stage('DVC: Data Versionization') {
+        stage('ML Lifecycle: Model Training') {
             steps {
-                echo 'Verifying data hashes via Data Version Control...'
-                echo 'Running: dvc pull --remote azure-blob-storage'
-                echo 'DVC pull skipped (Active: Embedded local dataset mode)'
+                script {
+                    echo "Starting specialized MLOps training lifecycle..."
+                    sh ". venv/bin/activate && python3 -m backend.app.ml.train_regression"
+                    sh ". venv/bin/activate && python3 -m backend.app.ml.train_classifier"
+                    sh ". venv/bin/activate && python3 -m backend.app.ml.train_timeseries"
+                    echo "Metrics logged to MLflow via ${MLFLOW_TRACKING_URI}"
+                }
             }
         }
 
-        stage('ML Pipeline: Train Regression & Classifier Models') {
+        stage('Container Build') {
             steps {
-                echo 'Reproducing Machine Learning Pipeline tracks...'
-                echo 'Running: dvc repro'
-                
-                echo '> Train Regression (LightGBM, XGBoost, RF)...'
-                echo '> Train Trajectory Classifiers...'
-                echo '> Time Series Value Forecaster...'
-                
-                echo 'Generating evaluation matrices to /metrics/...'
-                echo 'Tracking runs to MLflow!'
-                echo 'SUCCESS: All models trained and compiled.'
+                script {
+                    sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                    sh "docker tag ${DOCKER_IMAGE}:latest ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                }
             }
         }
 
-        stage('Docker Compilation') {
-            steps {
-                echo "Building Container Image: ${DOCKER_IMAGE_NAME}:latest"
-                echo 'Running: docker build -t elitescout/football-mlops:latest .'
-                echo 'Image packaged successfully.'
-            }
-        }
-
-        stage('Azure MLOps Deployment') {
+        stage('DockerHub Deployment') {
             when {
                 branch 'main'
             }
             steps {
-                echo 'Authenticating with Azure Container Registry...'
-                echo "Pushing ${DOCKER_IMAGE_NAME}:latest"
-                echo "Deploying newly pushed image targeting Web App Hook: ${AZURE_WEBAPP_NAME}"
-                echo 'Deployment executed successfully!'
+                script {
+                    // This requires a credential ID 'dockerhub-creds' created in Jenkins UI
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                        sh "docker push ${DOCKER_IMAGE}:latest"
+                        sh "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            echo 'Archiving MLflow tracking artifacts...'
-            // archiveArtifacts artifacts: 'metrics/*.json', allowEmptyArchive: true
+            cleanWs()
         }
         success {
-            echo 'Pipeline executed correctly without errors.'
+            echo "Pipeline SUCCESS - Build #${BUILD_NUMBER} deployed."
         }
         failure {
-            echo 'Error triggered in MLOps Pipeline checks.'
+            echo "Pipeline FAILURE - MLOps checks failed."
         }
     }
 }

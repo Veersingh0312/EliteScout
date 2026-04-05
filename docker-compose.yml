@@ -29,14 +29,17 @@ services:
     command: >
       sh -c "pip install mlflow==3.10.1 && mlflow db upgrade sqlite:///app/mlflow.db && mlflow server --backend-store-uri sqlite:///app/mlflow.db --default-artifact-root /app/mlruns/ --host 0.0.0.0"
 
-  # Jenkins Local CI/CD
+  # Jenkins Local CI/CD (MLOps Orchestrator)
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: docker/jenkins/Dockerfile
     container_name: jenkins-ci
+    user: root
     ports:
       - "8085:8080"
       - "50000:50000"
     volumes:
       - ./jenkins_home:/var/jenkins_home
-      # Mount docker socket so Jenkins could execute actual docker builds if configured
+      # Mount docker socket so Jenkins can build images natively
       - /var/run/docker.sock:/var/run/docker.sock
