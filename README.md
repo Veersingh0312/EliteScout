@@ -29,6 +29,8 @@ docker-compose up --build
 ```
 - Core App & Dashboard: `http://localhost:8000`
 - MLflow Tracking Server: `http://localhost:5050`
+- Interactive API Docs (Swagger): `http://localhost:8000/docs`
+- Alternative API Docs (ReDoc): `http://localhost:8000/redoc`
 
 ### Option 2: Manual Installation
 
