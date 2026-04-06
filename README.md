@@ -31,7 +31,7 @@ docker-compose up --build
 - MLflow Tracking Server: `http://localhost:5050`
 - Interactive API Docs (Swagger): `http://localhost:8000/docs`
 - Alternative API Docs (ReDoc): `http://localhost:8000/redoc`
-- Jenkins CI/CD Orchestrator: `http://localhost:8085`
+- Jenkins CI/CD Orchestrator: `http://localhost:8080/job/EliteScout/`
 
 ### Option 2: Manual Installation
 

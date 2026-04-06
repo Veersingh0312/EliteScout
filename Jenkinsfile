@@ -6,6 +6,8 @@ pipeline {
         DOCKER_IMAGE = 'veersinghx7/football-mlops'
         MLFLOW_TRACKING_URI = 'http://localhost:5050'
         PYTHON_PATH = "C:\\Users\\veers\\AppData\\Local\\Programs\\Python\\Python311\\python.exe"
+        PYTHONUTF8 = '1'
+        PYTHONIOENCODING = 'utf-8'
     }
 
     stages {
