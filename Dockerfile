@@ -1,37 +1,49 @@
 # Stage 1: Build React frontend
-FROM node:20-alpine AS build-stage
+FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
-COPY frontend/package.json ./
-RUN npm install
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install --frozen-lockfile || npm install
 COPY frontend/ ./
 RUN npm run build
 
-# Stage 2: Serve with FastAPI
-FROM python:3.10-slim AS serve-stage
+# Stage 2: Prepare Python Dependencies (WHEELS)
+FROM python:3.11-slim AS backend-builder
 WORKDIR /app
-
-# System dependencies for scikit-learn/XGBoost
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install python dependencies
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# --prefer-binary is KEY to avoiding OOM during compilation of wheels on low-RAM hosts
+RUN pip install --upgrade pip && \
+    pip wheel --no-cache-dir --wheel-dir /app/wheels --prefer-binary -r requirements.txt
 
-# Copy backend code, models, metrics, data
+# Stage 3: Final Production Image
+FROM python:3.11-slim AS final
+WORKDIR /app
+
+# Only core runtime library needed for XGBoost/LightGBM
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy wheels from builder and install
+COPY --from=backend-builder /app/wheels /app/wheels
+RUN pip install --no-cache-dir /app/wheels/* && rm -rf /app/wheels
+
+# Copy backend application code
 COPY backend/ ./backend/
 COPY models/ ./models/
 COPY metrics/ ./metrics/
 COPY data/ ./data/
 
-# Copy built frontend output
-COPY --from=build-stage /app/frontend/dist /app/frontend/dist
+# Copy built frontend assets
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
-# Mount static frontend via FastAPI
-# Wait, main.py doesn't currently mount static files. Let's patch it quickly via bash later or assume proxy via nginx.
-# Actually, we should edit main.py to mount the react app. 
-
+# EXPOSE and Start
 EXPOSE 8000
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,12 +1,19 @@
-fastapi
-uvicorn[standard]
-pandas
-numpy
-scikit-learn
-lightgbm
-xgboost
-mlflow
-joblib
-python-dotenv
-pydantic
-python-multipart
+# Core Backend
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+pydantic==2.9.2
+python-dotenv==1.0.1
+python-multipart==0.0.9
+
+# ML Stack (Pinned for stability & binary wheel support)
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.5.1
+joblib==1.4.2
+
+# Specialized ML (Binary wheels preferred to avoid compilation OOM)
+lightgbm==4.5.0
+xgboost==2.1.1
+
+# MLOps
+mlflow==2.16.2

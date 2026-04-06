@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    options {
+        timeout(time: 30, unit: 'MINUTES')
+        retry(2)
+        timestamps()
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+    }
+
     environment {
         AZ_WEBAPP_NAME = 'football-mlops-app'
         DOCKER_IMAGE = 'veersinghx7/football-mlops'
@@ -11,29 +18,47 @@ pipeline {
     }
 
     stages {
-        stage('Initialize & Dependencies') {
+        stage('Environment Audit') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh "python3 -m venv venv"
-                        sh ". venv/bin/activate && pip install --upgrade pip"
-                        sh ". venv/bin/activate && pip install -r backend/requirements.txt"
-                        sh ". venv/bin/activate && pip install dvc"
+                        sh "free -m || true"
+                        sh "df -h"
                     } else {
-                        bat "\"${PYTHON_PATH}\" -m venv venv"
-                        bat "venv\\Scripts\\python.exe -m pip install --upgrade pip"
-                        bat "venv\\Scripts\\pip install -r backend\\requirements.txt"
-                        bat "venv\\Scripts\\pip install dvc"
+                        bat "powershell -Command \"Get-WmiObject Win32_OperatingSystem | Select-Object TotalVisibleMemorySize, FreePhysicalMemory\""
                     }
                 }
             }
         }
 
-        stage('DVC: Data Verification') {
+        stage('Initialize & Dependencies') {
+            steps {
+                script {
+                    echo "Checking Virtual Environment Cache..."
+                    if (isUnix()) {
+                        sh "test -d venv || python3 -m venv venv"
+                        sh ". venv/bin/activate && pip install --upgrade pip"
+                        sh ". venv/bin/activate && pip install --prefer-binary -r backend/requirements.txt"
+                        sh ". venv/bin/activate && pip install dvc"
+                    } else {
+                        bat """
+                        if not exist venv (
+                            "${PYTHON_PATH}" -m venv venv
+                        )
+                        venv\\Scripts\\python.exe -m pip install --upgrade pip
+                        venv\\Scripts\\pip install --prefer-binary -r backend\\requirements.txt
+                        venv\\Scripts\\pip install dvc
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Data & Model Refresh') {
             steps {
                 script {
                     if (isUnix()) {
-                        sh ". venv/bin/activate && dvc --version"
+                        sh ". venv/bin/activate && dvc pull --no-run-cache || echo 'DVC pull failed, continuing with local data...'"
                     } else {
                         bat "venv\\Scripts\\dvc --version"
                     }
@@ -49,11 +74,11 @@ pipeline {
                     if (isUnix()) {
                         sh ". venv/bin/activate && python3 -m backend.app.ml.train_regression"
                         sh ". venv/bin/activate && python3 -m backend.app.ml.train_classifier"
-                        sh ". venv/bin/activate && python3 -m backend.app.ml.train_timeseries"
                     } else {
-                        bat "venv\\Scripts\\python -m backend.app.ml.train_regression"
-                        bat "venv\\Scripts\\python -m backend.app.ml.train_classifier"
-                        bat "venv\\Scripts\\python -m backend.app.ml.train_timeseries"
+                        bat """
+                        venv\\Scripts\\python.exe -m backend.app.ml.train_regression
+                        venv\\Scripts\\python.exe -m backend.app.ml.train_classifier
+                        """
                     }
                     echo "Metrics logged to MLflow via ${MLFLOW_TRACKING_URI}"
                 }
@@ -63,12 +88,15 @@ pipeline {
         stage('Container Build') {
             steps {
                 script {
+                    echo "Building Production Docker Image (Memory Optimized)..."
                     if (isUnix()) {
-                        sh "docker build -t ${DOCKER_IMAGE}:latest ."
+                        sh "docker build --no-cache -t ${DOCKER_IMAGE}:latest --memory=3g ."
                         sh "docker tag ${DOCKER_IMAGE}:latest ${DOCKER_IMAGE}:${BUILD_NUMBER}"
                     } else {
-                        bat "docker build -t ${DOCKER_IMAGE}:latest ."
-                        bat "docker tag ${DOCKER_IMAGE}:latest ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                        bat """
+                        docker build -t ${DOCKER_IMAGE}:latest .
+                        docker tag ${DOCKER_IMAGE}:latest ${DOCKER_IMAGE}:%BUILD_NUMBER%
+                        """
                     }
                 }
             }
@@ -88,7 +116,7 @@ pipeline {
                         } else {
                             bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
                             bat "docker push ${DOCKER_IMAGE}:latest"
-                            bat "docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}"
+                            bat "docker push ${DOCKER_IMAGE}:%BUILD_NUMBER%"
                         }
                     }
                 }
@@ -98,13 +126,21 @@ pipeline {
 
     post {
         always {
+            script {
+                echo "Cleaning up build artifacts..."
+                if (isUnix()) {
+                    sh "docker system prune -f || true"
+                } else {
+                    bat "docker system prune -f"
+                }
+            }
             cleanWs()
         }
         success {
             echo "Pipeline SUCCESS - Build #${BUILD_NUMBER} deployed."
         }
         failure {
-            echo "Pipeline FAILURE - MLOps checks failed."
+            echo "Pipeline FAILURE - MLOps checks failed. Resources may be exhausted."
         }
     }
 }
