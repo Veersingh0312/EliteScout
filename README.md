@@ -14,10 +14,46 @@ An end-to-end MLOps platform for analyzing and predicting football player market
 
 ## Architecture
 
+### System Flowchart
+
+```mermaid
+graph TD
+    subgraph "1. Data Layer"
+        D1[Local Transfermarkt CSVs] --> D2[DVC Versioning]
+    end
+
+    subgraph "2. CI/CD Orchestration (Jenkins)"
+        J1[Jenkins Pipeline] --> J2[Env Audit & Resource Check]
+        J2 --> J3[Initialize Venv & Dependency Cache]
+    end
+
+    subgraph "3. ML Lifecycle"
+        J3 --> M1[DVC Data Acquisition]
+        M1 --> M2[Feature Engineering]
+        M2 --> M3[Model Training & Eval]
+        M3 --> M4[MLflow Tracking & Model Registry]
+    end
+
+    subgraph "4. Containerization & Deployment"
+        M4 --> C1[Vite React Frontend Build]
+        C1 --> C2[Memory-Optimized Docker Build]
+        C2 --> C3[Docker Hub / Registry Push]
+    end
+
+    subgraph "5. Production Service"
+        C3 --> P1[FastAPI Production Server]
+        P1 --> P2[React Glassmorphism UI]
+        P1 --> P3[Intelligence API Endpoints]
+    end
+
+    D2 -.-> M1
+    M4 -.-> P1
+```
+
 *   **Backend:** FastAPI, Pandas, scikit-learn, XGBoost, LightGBM
 *   **Frontend:** Vite, React, Tailwind CSS, Recharts, Lucide-React
 *   **MLOps:** MLflow (experiment tracking), DVC (data versioning)
-*   **Deployment:** Docker Compose, Dockerfiles
+*   **Deployment:** Jenkins CI/CD, Dockerfiles, Multi-stage Builds
 *   **Offline Mode:** 100% decoupled from 3rd-party live APIs; relies solely on cached, sanitized local knowledge bases for lightning-fast querying.
 
 ## Running Locally
